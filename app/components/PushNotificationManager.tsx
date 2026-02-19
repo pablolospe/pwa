@@ -26,15 +26,13 @@ export default function PushNotificationManager() {
     useEffect(() => {
         if ('serviceWorker' in navigator && 'PushManager' in window) {
             setIsSupported(true)
-            registerServiceWorker()
+            navigator.serviceWorker.ready.then((registration) => {
+                registration.pushManager.getSubscription().then((sub) => {
+                    setSubscription(sub)
+                })
+            })
         }
     }, [])
-
-    async function registerServiceWorker() {
-        const registration = await navigator.serviceWorker.ready
-        const sub = await registration.pushManager.getSubscription()
-        setSubscription(sub)
-    }
 
     async function subscribeToPush() {
         const registration = await navigator.serviceWorker.ready
