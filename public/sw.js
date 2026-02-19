@@ -1,9 +1,8 @@
-const CACHE_NAME = 'tufiesta-v2'
+const CACHE_NAME = 'tufiesta-v3'
 
 const PRECACHE_URLS = [
   '/',
   '/offline',
-  '/manifest.json',
   '/android-chrome-192x192.png',
   '/android-chrome-512x512.png',
   '/logo.webp',

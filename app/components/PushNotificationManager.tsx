@@ -26,26 +26,39 @@ export default function PushNotificationManager() {
     useEffect(() => {
         if ('serviceWorker' in navigator && 'PushManager' in window) {
             setIsSupported(true)
-            navigator.serviceWorker.ready.then((registration) => {
-                registration.pushManager.getSubscription().then((sub) => {
+            navigator.serviceWorker.ready
+                .then((registration) => {
+                    return registration.pushManager.getSubscription()
+                })
+                .then((sub) => {
                     setSubscription(sub)
                 })
-            })
+                .catch((err) => {
+                    console.error('Error getting subscription:', err)
+                })
         }
     }, [])
 
-    async function subscribeToPush() {
-        const registration = await navigator.serviceWorker.ready
-        const sub = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(
-                process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
-            ),
-        })
-        setSubscription(sub)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const serializedSub = JSON.parse(JSON.stringify(sub))
-        await subscribeUser(serializedSub)
+    const subscribeToPush = async () => {
+        try {
+            const registration = await navigator.serviceWorker.ready
+            console.log('SW ready:', registration.scope)
+            
+            const sub = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(
+                    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
+                ),
+            })
+            console.log('Subscription:', sub)
+            setSubscription(sub)
+            const serializedSub = JSON.parse(JSON.stringify(sub))
+            await subscribeUser(serializedSub)
+            alert('Suscrito correctamente!')
+        } catch (err) {
+            console.error('Error subscribing:', err)
+            alert('Error al suscribirse: ' + err)
+        }
     }
 
     async function unsubscribeFromPush() {
