@@ -1,15 +1,18 @@
-const CACHE_NAME = 'tufiesta-v1'
-const STATIC_ASSETS = [
+const CACHE_NAME = 'tufiesta-v2'
+
+const PRECACHE_URLS = [
   '/',
   '/offline',
+  '/manifest.json',
   '/android-chrome-192x192.png',
   '/android-chrome-512x512.png',
+  '/logo.webp',
 ]
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS)
+      return cache.addAll(PRECACHE_URLS)
     })
   )
   self.skipWaiting()
@@ -29,26 +32,75 @@ self.addEventListener('activate', (event) => {
 })
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.mode === 'navigate') {
+  const { request } = event
+  const url = new URL(request.url)
+
+  if (request.method !== 'GET') {
+    return
+  }
+
+  if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match('/offline')
+      fetch(request)
+        .then((response) => {
+          const responseClone = response.clone()
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, responseClone)
+          })
+          return response
+        })
+        .catch(() => {
+          return caches.match(request).then((cached) => {
+            return cached || caches.match('/offline')
+          })
+        })
+    )
+    return
+  }
+
+  if (url.pathname.startsWith('/_next/static/')) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        return cached || fetch(request).then((response) => {
+          const responseClone = response.clone()
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, responseClone)
+          })
+          return response
+        })
+      })
+    )
+    return
+  }
+
+  if (request.destination === 'image' || url.pathname.endsWith('.png') || url.pathname.endsWith('.webp') || url.pathname.endsWith('.svg')) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        return cached || fetch(request).then((response) => {
+          const responseClone = response.clone()
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, responseClone)
+          })
+          return response
+        })
       })
     )
     return
   }
 
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      if (event.request.method !== 'GET') {
-        return response || fetch(event.request)
-      }
-      return response || fetch(event.request).then((fetchResponse) => {
-        return caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, fetchResponse.clone())
-          return fetchResponse
-        })
+    caches.match(request).then((cached) => {
+      return cached || fetch(request).then((response) => {
+        if (response.ok) {
+          const responseClone = response.clone()
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, responseClone)
+          })
+        }
+        return response
       })
+    }).catch(() => {
+      return caches.match('/offline')
     })
   )
 })
