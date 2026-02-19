@@ -44,6 +44,14 @@ export default function PushNotificationManager() {
             const registration = await navigator.serviceWorker.ready
             console.log('SW ready:', registration.scope)
             
+            // Check current permission
+            const perm = await Notification.requestPermission()
+            console.log('Permission:', perm)
+            if (perm !== 'granted') {
+                alert('Por favor permite las notificaciones en el navegador')
+                return
+            }
+            
             const sub = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: urlBase64ToUint8Array(
