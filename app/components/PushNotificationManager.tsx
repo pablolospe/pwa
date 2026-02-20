@@ -26,16 +26,24 @@ export default function PushNotificationManager() {
     useEffect(() => {
         if ('serviceWorker' in navigator && 'PushManager' in window) {
             setIsSupported(true)
-            navigator.serviceWorker.ready
-                .then((registration) => {
-                    return registration.pushManager.getSubscription()
-                })
-                .then((sub) => {
+
+            const checkAndSubscribe = async () => {
+                try {
+                    const registration = await navigator.serviceWorker.ready
+                    const sub = await registration.pushManager.getSubscription()
                     setSubscription(sub)
-                })
-                .catch((err) => {
-                    console.error('Error getting subscription:', err)
-                })
+
+                    // Auto-subscribe if permission is already granted but no subscription found
+                    if (!sub && Notification.permission === 'granted') {
+                        console.log('Permission already granted, auto-subscribing...')
+                        await subscribeToPush()
+                    }
+                } catch (err) {
+                    console.error('Error during auto-subscription check:', err)
+                }
+            }
+
+            checkAndSubscribe()
         }
     }, [])
 
