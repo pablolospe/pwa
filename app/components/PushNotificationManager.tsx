@@ -41,31 +41,48 @@ export default function PushNotificationManager() {
 
     const subscribeToPush = async () => {
         try {
+            console.log('Starting subscription process...')
             const registration = await navigator.serviceWorker.ready
             console.log('SW ready:', registration.scope)
-            
+
             // Check current permission
+            console.log('Requesting notification permission...')
             const perm = await Notification.requestPermission()
-            console.log('Permission:', perm)
+            console.log('Permission status:', perm)
             if (perm !== 'granted') {
-                alert('Por favor permite las notificaciones en el navegador')
+                alert('Por favor permite las notificaciones en el navegador. Estado actual: ' + perm)
                 return
             }
-            
+
+            const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+            if (!vapidPublicKey) {
+                console.error('NEXT_PUBLIC_VAPID_PUBLIC_KEY is missing')
+                alert('Error: Llave pública VAPID no configurada')
+                return
+            }
+
+            console.log('Subscribing to push manager...')
             const sub = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(
-                    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
-                ),
+                applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
             })
-            console.log('Subscription:', sub)
+            console.log('Push subscription successful:', sub)
+
             setSubscription(sub)
             const serializedSub = JSON.parse(JSON.stringify(sub))
-            await subscribeUser(serializedSub)
-            alert('Suscrito correctamente!')
+            console.log('Sending subscription to server...')
+            const result = await subscribeUser(serializedSub)
+            console.log('Server subscription result:', result)
+
+            if (result.success) {
+                alert('Suscrito correctamente!')
+            } else {
+                const errorMsg = (result as any).error || 'Error desconocido'
+                alert('Servidor no pudo guardar la suscripción: ' + errorMsg)
+            }
         } catch (err) {
-            console.error('Error subscribing:', err)
-            alert('Error al suscribirse: ' + err)
+            console.error('Detailed subscription error:', err)
+            alert('Error al suscribirse (revisa la consola): ' + err)
         }
     }
 

@@ -24,8 +24,8 @@ export const metadata: Metadata = {
   title: "TuFiesta - Organiza tu fiesta perfecta",
   description: "TuFiesta - Organiza tu fiesta perfecta",
   icons: {
-    icon: "/android-chrome-192x192.png",
-    apple: "/android-chrome-192x192.png",
+    icon: "/icons/android-chrome-192x192.png",
+    apple: "/icons/android-chrome-192x192.png",
   },
   appleWebApp: {
     capable: true,

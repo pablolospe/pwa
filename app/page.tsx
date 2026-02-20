@@ -1,5 +1,6 @@
 import Image from "next/image";
 import PushNotificationManager from "./components/PushNotificationManager";
+import NotificationBell from "./components/AcceptNotifications";
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
           height={200}
           priority
         />
+        <NotificationBell />
         <PushNotificationManager />
         <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
           <h2 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">

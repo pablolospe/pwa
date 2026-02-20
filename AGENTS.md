@@ -45,5 +45,11 @@ El Agente debe aplicar estos criterios técnicos para elevar la calidad de la PW
 - Configurar el Service Worker para escuchar el evento `push` y mostrar `self.registration.showNotification()`.
 - Gestionar la suscripción del usuario vinculando el `subscriptionId` a su `PersonaDoc` en la base de datos (`tfd_personas`).
 
+## 🔔 Skill: Push Notifications (Cross-Platform)
+- **PC & Android:** Usar Web Push API estándar.
+- **iOS:** Recordar que solo funciona si la PWA está instalada en el Home Screen.
+- **Payload:** Las notificaciones deben incluir `title`, `body` y un `url` de redirección.
+- **Database Link:** Guardar el `endpoint` y `keys` de la suscripción en la tabla `tfd_personas` (necesitaremos una nueva tabla o campo para esto más adelante).
+
 ---
 **Nota para el Agente:** Si el prompt de instalación no aparece en el celular tras la configuración, el agente debe priorizar el debug del Service Worker antes de generar cualquier otro componente.

@@ -105,24 +105,30 @@ self.addEventListener('fetch', (event) => {
 })
 
 self.addEventListener('push', function (event) {
+  console.log('Push event received:', event)
   if (event.data) {
     let data
     try {
       data = event.data.json()
+      console.log('Push data (JSON):', data)
     } catch {
       data = { title: 'TuFiesta', body: event.data.text() }
+      console.log('Push data (Text):', data)
     }
     const options = {
       body: data.body,
-      icon: data.icon || '/android-chrome-192x192.png',
-      badge: '/android-chrome-192x192.png',
+      icon: data.icon || '/icons/android-chrome-192x192.png',
+      badge: '/icons/badge.png',
       vibrate: [100, 50, 100],
       data: {
         dateOfArrival: Date.now(),
         primaryKey: '2',
       },
     }
+    console.log('Showing notification with options:', options)
     event.waitUntil(self.registration.showNotification(data.title, options))
+  } else {
+    console.warn('Push event received but no data provided')
   }
 })
 
