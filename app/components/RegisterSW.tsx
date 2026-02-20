@@ -9,6 +9,9 @@ export default function RegisterSW() {
                 .register('/sw.js')
                 .then((registration) => {
                     console.log('Service Worker registered with scope:', registration.scope)
+                    if (registration.installing) console.log('SW installing')
+                    if (registration.waiting) console.log('SW waiting')
+                    if (registration.active) console.log('SW active')
                 })
                 .catch((error) => {
                     console.error('Service Worker registration failed:', error)

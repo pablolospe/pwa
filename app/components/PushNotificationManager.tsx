@@ -42,7 +42,14 @@ export default function PushNotificationManager() {
     const subscribeToPush = async () => {
         try {
             console.log('Starting subscription process...')
-            const registration = await navigator.serviceWorker.ready
+
+            // Timeout to prevent hanging if SW is stuck
+            const swReadyPromise = navigator.serviceWorker.ready;
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Service Worker registration timeout')), 5000)
+            );
+
+            const registration = await Promise.race([swReadyPromise, timeoutPromise]) as ServiceWorkerRegistration;
             console.log('SW ready:', registration.scope)
 
             // Check current permission
